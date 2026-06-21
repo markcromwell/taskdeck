@@ -127,7 +127,7 @@ def run_install(args):
         sys.exit(1)
 
     # 4. Wait for health
-    health_url = "http://localhost:8765/health"  # TODO: update port if different
+    health_url = f"http://localhost:{os.environ.get('HOST_PORT','8000')}/health"
     print(f"\nWaiting for service at {health_url}...")
     if wait_healthy(health_url):
         print(_GREEN("\nTaskDeck is up and healthy."))

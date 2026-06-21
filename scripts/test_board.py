@@ -15,7 +15,7 @@ def test_root_returns_200_without_auth():
 
 
 def test_root_renders_created_project_name():
-    env = {k: v for k, v in os.environ.items() if k != "TASKDECK_API_KEY"}
+    env = {k: v for k, v in os.environ.items() if k != "APP_API_KEY"}
     with mock.patch.dict(os.environ, env, clear=True):
         client = TestClient(create_app())
         client.post("/projects", json={"name": "Board Project"})

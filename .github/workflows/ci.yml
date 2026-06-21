@@ -15,7 +15,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.lock
-      - run: python -m pytest scripts/test_unit.py -x -q
+      - run: python -m pytest scripts/ -q
       - run: python -m scripts.smoke_boot
 
   # Standard SOV Program boot gate (Option A): build the REAL image and prove it serves /health, where

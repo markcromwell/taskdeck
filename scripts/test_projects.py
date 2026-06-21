@@ -31,14 +31,14 @@ def test_init_sqlite_schema_creates_projects():
 
 
 def test_post_without_api_key_returns_401():
-    with mock.patch.dict(os.environ, {"TASKDECK_API_KEY": API_KEY}, clear=False):
+    with mock.patch.dict(os.environ, {"APP_API_KEY": API_KEY}, clear=False):
         client = TestClient(create_app())
         resp = client.post("/projects", json={"name": "Alpha"})
         assert resp.status_code == 401
 
 
 def test_post_with_api_key_returns_201():
-    with mock.patch.dict(os.environ, {"TASKDECK_API_KEY": API_KEY}, clear=False):
+    with mock.patch.dict(os.environ, {"APP_API_KEY": API_KEY}, clear=False):
         client = TestClient(create_app())
         resp = client.post(
             "/projects",
@@ -52,7 +52,7 @@ def test_post_with_api_key_returns_201():
 
 
 def test_get_projects_returns_created():
-    with mock.patch.dict(os.environ, {"TASKDECK_API_KEY": API_KEY}, clear=False):
+    with mock.patch.dict(os.environ, {"APP_API_KEY": API_KEY}, clear=False):
         client = TestClient(create_app())
         client.post(
             "/projects",
@@ -66,7 +66,7 @@ def test_get_projects_returns_created():
 
 
 def test_auth_bypassed_when_no_key_configured():
-    env = {k: v for k, v in os.environ.items() if k != "TASKDECK_API_KEY"}
+    env = {k: v for k, v in os.environ.items() if k != "APP_API_KEY"}
     with mock.patch.dict(os.environ, env, clear=True):
         client = TestClient(create_app())
         resp = client.post("/projects", json={"name": "Open"})

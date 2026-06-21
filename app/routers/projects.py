@@ -26,7 +26,7 @@ def fetch_all_projects(session: Session) -> list[Project]:
     return session.query(Project).order_by(Project.id).all()
 
 
-@router.get("", response_model=list[ProjectOut], dependencies=[Depends(require_api_key)])
+@router.get("", response_model=list[ProjectOut])  # reads are public (public board); writes are gated
 def list_projects(session: Session = Depends(get_session)):
     return fetch_all_projects(session)
 
