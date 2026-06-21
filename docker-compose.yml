@@ -1,0 +1,37 @@
+# Standard SOV Program — +db module compose (app + Postgres). The app still boots standalone on SQLite
+# (DATABASE_URL=sqlite:///./app.db); this stack wires the Postgres profile for dev/uat/prod.
+services:
+  app:
+    build: .
+    image: ${PROGRAM_CODE:-TASKDECK}:latest
+    ports:
+      - "${HOST_PORT:-8000}:8000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg2://app:app@db:5432/app}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: app
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+volumes:
+  pgdata:
