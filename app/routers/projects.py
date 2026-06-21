@@ -31,9 +31,13 @@ class ProjectOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+def fetch_all_projects(session: Session) -> list[Project]:
+    return session.query(Project).order_by(Project.id).all()
+
+
 @router.get("", response_model=list[ProjectOut], dependencies=[Depends(require_api_key)])
 def list_projects(session: Session = Depends(get_session)):
-    return session.query(Project).order_by(Project.id).all()
+    return fetch_all_projects(session)
 
 
 @router.post("", response_model=ProjectOut, status_code=201, dependencies=[Depends(require_api_key)])

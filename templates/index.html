@@ -4,5 +4,10 @@
 <body>
   <h1>TaskDeck</h1>
   <p>Standard SOV Program &mdash; +ui module. This page is server-rendered with Jinja2.</p>
+  <ul>
+    {% for project in projects %}
+    <li>{{ project.name }}</li>
+    {% endfor %}
+  </ul>
 </body>
 </html>
