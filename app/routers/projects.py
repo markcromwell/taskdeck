@@ -1,24 +1,15 @@
-"""Projects CRUD — authenticated when TASKDECK_API_KEY is configured."""
+"""Projects CRUD — authenticated via the shared app.auth.require_api_key (enforced when APP_API_KEY set)."""
 from __future__ import annotations
 
-import os
-
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from app.auth import require_api_key
 from app.db import get_session
 from app.models import Project
 
 router = APIRouter(prefix="/projects", tags=["projects"])
-
-
-def require_api_key(x_api_key: str | None = Header(default=None)) -> None:
-    expected = os.environ.get("TASKDECK_API_KEY", "")
-    if not expected:
-        return
-    if x_api_key != expected:
-        raise HTTPException(status_code=401, detail="valid X-API-Key required")
 
 
 class ProjectIn(BaseModel):
