@@ -1,15 +1,18 @@
-# Standard SOV Program — +db module compose (app + Postgres). The app still boots standalone on SQLite
-# (DATABASE_URL=sqlite:///./app.db); this stack wires the Postgres profile for dev/uat/prod.
+# Standard SOV Program — +db module compose (app + Postgres), TIER-PARAMETERIZED for `sov deploy`.
+# Each tier deploys as its OWN compose project (sov deploy TASKDECK <tier>) reading deploy/<tier>.env,
+# so qual/uat/prod get isolated networks, ports, and Postgres volumes. The app still boots standalone on
+# SQLite (DATABASE_URL=sqlite:///./app.db) for local dev / the boot-smoke.
 services:
   app:
     build: .
-    image: ${PROGRAM_CODE:-TASKDECK}:latest
+    # Run migrations on the shared Postgres BEFORE serving (the Dockerfile CMD is uvicorn-only, and
+    # init_sqlite_schema deliberately skips Postgres) — else the stack boots but the tables never exist.
+    command: ["sh", "-c", "alembic upgrade head && exec uvicorn main:app --host 0.0.0.0 --port 8000"]
     ports:
-      - "${HOST_PORT:-8000}:8000"
-    env_file:
-      - .env
+      - "${TASKDECK_PORT:-8000}:8000"
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg2://app:app@db:5432/app}
+      DATABASE_URL: postgresql+psycopg2://app:${TASKDECK_DB_PASSWORD:-app}@db:5432/${TASKDECK_DB_NAME:-app}
+      APP_API_KEY: ${TASKDECK_API_KEY:-}
     depends_on:
       db:
         condition: service_healthy
@@ -24,8 +27,8 @@ services:
     image: postgres:16
     environment:
       POSTGRES_USER: app
-      POSTGRES_PASSWORD: app
-      POSTGRES_DB: app
+      POSTGRES_PASSWORD: ${TASKDECK_DB_PASSWORD:-app}
+      POSTGRES_DB: ${TASKDECK_DB_NAME:-app}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
