@@ -1,0 +1,21 @@
+# Blue-green overlay — app-green runs the NEW build on a SECONDARY port, sharing the tier's Postgres, so it
+# can be health-gated (and apply the expand-safe migration) BEFORE the canonical `app` (blue) adopts it.
+services:
+  app-green:
+    build: .
+    command: ["sh", "-c", "alembic upgrade head && exec uvicorn main:app --host 0.0.0.0 --port 8000"]
+    ports:
+      - "${TASKDECK_GREEN_PORT:-8900}:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg2://app:${TASKDECK_DB_PASSWORD:-app}@db:5432/${TASKDECK_DB_NAME:-app}
+      APP_API_KEY: ${TASKDECK_API_KEY:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
+    restart: "no"
